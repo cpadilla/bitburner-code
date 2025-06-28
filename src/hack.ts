@@ -1,12 +1,12 @@
 import { findOptimalTarget } from 'find-optimal-target.js'
+
 /** @param {NS} ns */
 export async function main(ns) {
 
-    const optimatlTarget = findOptimalTarget(ns);
-
     // Defines the "target server", which is the server
-    // that we're going to hack. In this case, it's "n00dles"
-    const target = "joesguns";
+    // that we're going to hack.
+    // const target = findOptimalTarget(ns);
+    const target = ns.args[0];
 
     // Defines how much money a server should have before we hack it
     // In this case, it is set to the maximum amount of money.
@@ -23,8 +23,10 @@ export async function main(ns) {
         ns.brutessh(target);
     }
 
-    // Get root access to target server
-    ns.nuke(target);
+    if (!ns.hasRootAccess(ns.getHostname())) {
+        // Get root access to target server
+        ns.nuke(target);
+    }
 
     // Infinite loop that continously hacks/grows/weakens the target server
     while(true) {

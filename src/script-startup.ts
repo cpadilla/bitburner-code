@@ -1,3 +1,7 @@
+import { NS } from "@ns";
+import { findOptimalTarget } from 'find-optimal-target.js'
+import { Server, dfs } from "server";
+
 /** @param {NS} ns */
 export async function main(ns) {
     // Array of all servers that don't need any ports opened
@@ -15,31 +19,78 @@ export async function main(ns) {
                         "max-hardware",
                         "iron-gym"];
 
-    // Copy our scripts onto each server that requires 0 ports
-    // to gain root access. Then use nuke() to gain admin access and
-    // run the scripts.
-    for (let i = 0; i < servers0Port.length; ++i) {
-        const serv = servers0Port[i];
+    let script = "hack.js";
+    let [target, servers] = findOptimalTarget(ns);
 
-        ns.scp("early-hack-template.js", serv);
-        ns.nuke(serv);
-        ns.exec("early-hack-template.js", serv, 6);
+    // Get the ram usage of the script
+    let ramUsage = ns.getScriptRam(script);
+
+    // Figure out how many ports we can open
+    let portsAccessible = 0;
+    let programs = ["BruteSSH.exe",
+                    "FTPCrack.exe",
+                    "relaySMTP.exe",
+                    "HTTPWorm.exe",
+                    "SQLInject.exe"];
+    for (let i = 0; i < programs.length; ++i) {
+        if (ns.fileExists(programs[i])) portsAccessible++;
     }
 
-    // Wait until we acquire the "BruteSSH.exe" program
-    while (!ns.fileExists("BruteSSH.exe")) {
-        await ns.sleep(60000);
-    }
+    // Copy our scripts onto each server
+    servers.forEach(async (server: Server, name: string, map: Map<string, Server>) => {
+        let threads = calculateThreads(ns, name, ramUsage);
 
-    // Copy our scripts onto each server that requires 1 port
-    // to gain root access. Then use brutessh() and nuke()
-    // to gain admin access and run the scripts.
-    for (let i = 0; i < servers1Port.length; ++i) {
-        const serv = servers1Port[i];
+        // Copy script over
+        ns.scp(script, name);
 
-        ns.scp("early-hack-template.js", serv);
-        ns.brutessh(serv);
-        ns.nuke(serv);
-        ns.exec("early-hack-template.js", serv, 12);
-    }
+        if (name != "home") {
+            // Open ports
+            let portsRequired = ns.getServerNumPortsRequired(name);
+            if (portsRequired > 0 && portsRequired <= portsAccessible) {
+                for (let i = 0; i < portsRequired; ++i) {
+                    switch (programs[i]) {
+                        case "BruteSSH.exe": {
+                            ns.brutessh(name);
+                            break;
+                        }
+                        case "FTPCrack.exe": {
+                            ns.tprint("Running FTPCrack.exe on " + name);
+                            ns.ftpcrack(name);
+                            break;
+                        }
+                        case "relaySMTP.exe": {
+                            ns.relaysmtp(name);
+                            break;
+                        }
+                        case "HTTPWorm.exe": {
+                            ns.httpworm(name);
+                            break;
+                        }
+                        case "SQLInject.exe": {
+                            ns.httpworm(name);
+                            break;
+                        }
+                    }
+                }
+
+                if (!ns.hasRootAccess(name)) {
+                    ns.nuke(name);
+                }
+            }
+
+        }
+
+        if (threads > 0) {
+            // Run script
+            ns.exec(script, name, threads, target);
+        }
+    });
+}
+
+function calculateThreads(ns: NS, server: string, ramUsage: number): number {
+
+    // Calculate how many threads we can make
+    // Take serverRam / ramUsage, rounded down
+    let serverRam = ns.getServerMaxRam(server);
+    return Math.floor(serverRam / ramUsage);
 }
