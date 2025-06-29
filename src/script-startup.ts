@@ -4,20 +4,6 @@ import { Server, dfs } from "server";
 
 /** @param {NS} ns */
 export async function main(ns) {
-    // Array of all servers that don't need any ports opened
-    // to gain root access. These have 16 GB of RAM
-    const servers0Port = ["sigma-cosmetics",
-                        "joesguns",
-                        "nectar-net",
-                        "hong-fang-tea",
-                        "harakiri-sushi"];
-
-    // Array of all servers that only need 1 port opened
-    // to gain root access. These have 32 GB of RAM
-    const servers1Port = ["neo-net",
-                        "zer0",
-                        "max-hardware",
-                        "iron-gym"];
 
     let script = "hack.js";
     let [target, servers] = findOptimalTarget(ns);
@@ -72,9 +58,13 @@ export async function main(ns) {
                         }
                     }
                 }
+            }
 
-                if (!ns.hasRootAccess(name)) {
-                    ns.nuke(name);
+            if (portsRequired <= portsAccessible) {
+                if (!ns.hasRootAccess(name) && name !== "home") {
+                    if (!ns.nuke(name)) {
+                        ns.tprint(`Nuke failed to run on ${name}`);
+                    }
                 }
             }
 
@@ -82,7 +72,10 @@ export async function main(ns) {
 
         if (threads > 0) {
             // Run script
-            ns.exec(script, name, threads, target);
+            let pid = ns.exec(script, name, threads, target);
+            if (pid === 0) {
+                ns.tprint(`Failed to run ${script} on ${name}.`);
+            }
         }
     });
 }

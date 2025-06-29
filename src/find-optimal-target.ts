@@ -24,7 +24,8 @@ export function findOptimalTarget(ns: NS): [string, Map<string, Server>] {
     let highestRatio = 0;
     let bestServer = home;
     servers.forEach((server: Server, name: string, map: Map<string, Server>) => {
-        if (server.ratio > highestRatio && server.requiredHackingLevel < hackingLevel / 2 ) {
+        let calculatedHackingLevel = hackingLevel < 2 ? hackingLevel : hackingLevel / 2;
+        if (server.ratio > highestRatio && server.requiredHackingLevel <= calculatedHackingLevel ) {
             highestRatio = server.ratio;
             bestServer = server;
         }
