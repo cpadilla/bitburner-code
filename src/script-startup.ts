@@ -3,8 +3,7 @@ import { findOptimalTarget } from 'find-optimal-target.js'
 import { calculateThreads } from 'util.js'
 import { Server, dfs } from "server";
 
-/** @param {NS} ns */
-export async function main(ns) {
+export async function main(ns: NS) {
 
     let script = "hack.js";
     let [target, servers] = findOptimalTarget(ns);
@@ -41,7 +40,6 @@ export async function main(ns) {
                             break;
                         }
                         case "FTPCrack.exe": {
-                            ns.tprint("Running FTPCrack.exe on " + name);
                             ns.ftpcrack(name);
                             break;
                         }
@@ -54,28 +52,40 @@ export async function main(ns) {
                             break;
                         }
                         case "SQLInject.exe": {
-                            ns.httpworm(name);
+                            ns.sqlinject(name);
                             break;
                         }
                     }
                 }
             }
 
+            // If we have access to the ports
             if (portsRequired <= portsAccessible) {
+                // If we don't have root access, nuke it
                 if (!ns.hasRootAccess(name) && name !== "home") {
                     if (!ns.nuke(name)) {
                         ns.tprint(`Nuke failed to run on ${name}`);
                     }
                 }
+
+                // If we can fit threads on it, run it
+                if (threads > 0) {
+                    // Run script
+                    let pid = ns.exec(script, name, threads, target);
+                    if (pid === 0) {
+                        ns.tprint(`Failed to run ${script} on ${name}.`);
+                    }
+                }
             }
 
-        }
-
-        if (threads > 0) {
-            // Run script
-            let pid = ns.exec(script, name, threads, target);
-            if (pid === 0) {
-                ns.tprint(`Failed to run ${script} on ${name}.`);
+        } else {
+            // If this is home, check if we have space to run it
+            if (threads > 0) {
+                // Run script
+                let pid = ns.exec(script, name, threads, target);
+                if (pid === 0) {
+                    ns.tprint(`Failed to run ${script} on ${name}.`);
+                }
             }
         }
     });

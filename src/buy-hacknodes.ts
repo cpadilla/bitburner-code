@@ -35,16 +35,16 @@ export async function main(ns: NS) {
                 cheapestUpgrade.type = Upgrade.Level;
             }
             let upgradeRAMCost = ns.hacknet.getRamUpgradeCost(i);
-            if (nodeStats.level < 64 && upgradeRAMCost < cheapestUpgrade.cost) {
+            if (nodeStats.ram < 64 && upgradeRAMCost < cheapestUpgrade.cost) {
                 cheapestUpgrade.index = i;
                 cheapestUpgrade.cost = upgradeRAMCost;
-                cheapestUpgrade.type = Upgrade.Level;
+                cheapestUpgrade.type = Upgrade.RAM;
             }
             let upgradeCoresCost = ns.hacknet.getCoreUpgradeCost(i);
             if (nodeStats.cores < 16 && upgradeCoresCost < cheapestUpgrade.cost) {
                 cheapestUpgrade.index = i;
                 cheapestUpgrade.cost = upgradeCoresCost;
-                cheapestUpgrade.type = Upgrade.Level;
+                cheapestUpgrade.type = Upgrade.Cores;
             }
         }
 
@@ -54,29 +54,30 @@ export async function main(ns: NS) {
         // If there are no nodes, or purchasing a node is cheaper than upgrading,
         // buy a new node
         if (nodes == 0 || purchaseNodeCost < cheapestUpgrade.cost) {
-            if (purchaseNodeCost <= ns.getServerMoneyAvailable("home") / 2) {
+            // Only buy if we have more than 10% the money of the upgrade
+            if (purchaseNodeCost <= ns.getServerMoneyAvailable("home") / 10) {
                 // ns.tprint("Purchasing hacknet node.");
                 ns.hacknet.purchaseNode();
                 nodes++;
             }
         } else {
             // Otherwise, upgrade
-            // Only buy if we have more than double the money of the upgrade
-            if (cheapestUpgrade.cost <= ns.getServerMoneyAvailable("home") / 2) {
+            // Only buy if we have more than 10% the money of the upgrade
+            if (purchaseNodeCost <= ns.getServerMoneyAvailable("home") / 10) {
                 switch (cheapestUpgrade.type) {
                     case (Upgrade.Level): {
                         // ns.tprint(`Upgrading hacknet node ${cheapestUpgrade.index} Level.`);
-                        ns.hacknet.upgradeLevel(cheapestUpgrade.index);
+                        ns.hacknet.upgradeLevel(cheapestUpgrade.index, 1);
                         break;
                     }
                     case (Upgrade.RAM): {
                         // ns.tprint(`Upgrading hacknet node ${cheapestUpgrade.index} RAM.`);
-                        ns.hacknet.upgradeRam(cheapestUpgrade.index);
+                        ns.hacknet.upgradeRam(cheapestUpgrade.index, 1);
                         break;
                     }
                     case (Upgrade.Cores): {
                         // ns.tprint(`Upgrading hacknet node ${cheapestUpgrade.index} Core.`);
-                        ns.hacknet.upgradeCore(cheapestUpgrade.index);
+                        ns.hacknet.upgradeCore(cheapestUpgrade.index, 1);
                         break;
                     }
                 }
