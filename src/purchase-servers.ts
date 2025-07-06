@@ -1,12 +1,11 @@
+import { NS } from "@ns";
 import { findOptimalTarget } from 'find-optimal-target.js'
 
-/** @param {NS} ns */
-export async function main(ns) {
-    // How much RAM each purchased server will have. In this case, it'll
-    // be 8GB.
-    const ram = 128;
-    let script = "hack.js";
-    let target = findOptimalTarget(ns);
+export async function main(ns: NS) {
+    // How much RAM each purchased server will have.
+    const ram = 1024;
+    let script = "basic-hack.js";
+    let [target, _] = findOptimalTarget(ns);
 
     // Get the ram usage of the script
     let ramUsage = ns.getScriptRam(script);
