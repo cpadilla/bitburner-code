@@ -39,8 +39,10 @@ export async function main(ns: NS): Promise<void> {
     const newServer = { ...server }; // Clone and simulate after hack
     newServer.moneyAvailable = server.moneyMax * (1 - hackPercent);
 
-    const growthMultiplier = server.moneyMax / newServer.moneyAvailable;
-    const growThreads = Math.ceil(ns.formulas.hacking.growThreads(newServer, player, growthMultiplier));
+    const minGrowthMultiplier = 1.01; // Force at least 1% growth needed
+    const actualGrowthMultiplier = server.moneyMax / newServer.moneyAvailable;
+    const growthMultiplier = Math.max(actualGrowthMultiplier, minGrowthMultiplier);
+    const growThreads = Math.max(1, Math.ceil(ns.formulas.hacking.growThreads(newServer, player, growthMultiplier)));
 
     // 3. Calculate weaken threads to offset security from hack + grow
     const hackSecurityIncrease = 0.002 * hackThreads;
@@ -64,7 +66,10 @@ export async function main(ns: NS): Promise<void> {
     while (true) {
         const totalRam = ns.getServerMaxRam(host);
         const usedRam = ns.getServerUsedRam(host);
-        const freeRam = totalRam - usedRam;
+        let freeRam = totalRam - usedRam;
+        if (host === "home") {
+            freeRam *= 0.8;
+        }
 
         const ramNeeded =
             hackThreads * hackRam +

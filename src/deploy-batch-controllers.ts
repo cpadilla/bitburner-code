@@ -14,7 +14,9 @@ export async function main(ns: NS): Promise<void> {
         await ns.sleep(1000);
     }
 
-    for (let i = 0; i < ns.getPurchasedServers().length; i++) {
+    // Deploy script to purchased servers
+    let i = 0;
+    for (; i < ns.getPurchasedServers().length; i++) {
         const server = ns.getPurchasedServers()[i];
 
         // Copy scripts over
@@ -26,6 +28,9 @@ export async function main(ns: NS): Promise<void> {
         // Launch batch controller
         ns.exec("batch-controller.js", server, 1, target, i); // pass instance offset for delay staggering
     }
+
+    // Also deploy to home server
+    ns.exec("batch-controller.js", "home", 1, target, i); // pass instance offset for delay staggering
 
     ns.tprint("🚀 Batch controllers deployed.");
 }
