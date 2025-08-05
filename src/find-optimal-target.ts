@@ -31,6 +31,5 @@ export function findOptimalTarget(ns: NS): [string, Map<string, Server>] {
         }
     });
 
-    ns.tprint("Targeting " + bestServer.name);
     return [bestServer.name, servers];
 }

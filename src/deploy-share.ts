@@ -13,6 +13,8 @@ export async function main(ns: NS) {
 
     const threads = Math.floor(availableRam / shareScriptRam);
 
-    ns.exec(script, host, threads);
+    // ns.exec(script, host, threads);
 
+    const bonus = ns.getSharePower();
+    ns.tprint(`🤝 Share Power Bonus: ${(bonus * 100).toFixed(2)}%`);
 }

@@ -5,8 +5,12 @@ import { Server, dfs } from "server";
 
 export async function main(ns: NS) {
 
-    let script = "hack.js";
+    let script = "basic-hack.js";
     let [target, servers] = findOptimalTarget(ns);
+    if (ns.args.length > 0) {
+        target = ns.args[0] as string;
+    }
+    ns.tprint(`Targeting ${target}`);
 
     // Get the ram usage of the script
     let ramUsage = ns.getScriptRam(script);

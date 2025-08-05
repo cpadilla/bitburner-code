@@ -1,6 +1,7 @@
 # TODO
 
 * Write a script for making stock market purchases
+* Fix batch controller to buy Formulas if does not exist
 
 # Done
 * ~~Write a script to purchase private servers~~

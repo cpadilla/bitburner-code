@@ -67,9 +67,6 @@ export async function main(ns: NS): Promise<void> {
         const totalRam = ns.getServerMaxRam(host);
         const usedRam = ns.getServerUsedRam(host);
         let freeRam = totalRam - usedRam;
-        if (host === "home") {
-            freeRam *= 0.8;
-        }
 
         const ramNeeded =
             hackThreads * hackRam +

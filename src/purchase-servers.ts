@@ -3,7 +3,7 @@ import { findOptimalTarget } from 'find-optimal-target.js'
 
 export async function main(ns: NS) {
     // How much RAM each purchased server will have.
-    const ram = 1024;
+    const ram = 256;
     let script = "basic-hack.js";
     let [target, _] = findOptimalTarget(ns);
 
